@@ -1,0 +1,28 @@
+from tortoise import fields
+from tortoise.models import Model
+import uuid
+
+
+class User(Model):
+    """
+    Stores information about the system's users.
+
+    Attributes:
+        id (UUID): Unique identifier of the user.
+        name (str): Name of the user.
+        email (str): User's email address.
+        is_active (bool): Indicates whether the user is active.
+        created_at (datetime): Record creation timestamp.
+    """
+    id = fields.UUIDField(pk=True, default=uuid.uuid4)
+    name = fields.CharField(max_length=60, null=False)
+    email = fields.CharField(max_length=60, unique=True, null=False)
+    is_active = fields.BooleanField(default=True)
+    created_at = fields.DatetimeField(auto_now_add=True)
+
+    class Meta:
+        table = "users"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.name} <{self.email}>"
