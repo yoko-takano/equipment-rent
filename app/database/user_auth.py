@@ -1,5 +1,9 @@
+from datetime import datetime
+
 from tortoise import fields, models
 import uuid
+
+from tools.application import naive_utcnow
 
 
 class UserAuth(models.Model):
@@ -17,14 +21,14 @@ class UserAuth(models.Model):
     username = fields.CharField(max_length=60, unique=True, null=False)
     password_hash = fields.CharField(max_length=100, null=False)
     user = fields.ForeignKeyField(
-        "database.User",
+        "models.User",
         related_name="auths",
         null=False
     )
-    created_at = fields.DatetimeField(auto_now_add=True)
+    created_at = fields.DatetimeField(null=False, default=naive_utcnow)
 
     class Meta:
-        table = "user_auth"
+        table = "UserAuth"
         ordering = ["-created_at"]
 
     def __str__(self):

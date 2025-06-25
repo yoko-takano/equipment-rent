@@ -1,5 +1,9 @@
+from datetime import datetime
+
 from tortoise import fields, models
 import uuid
+
+from tools.application import naive_utcnow
 
 
 class Command(models.Model):
@@ -15,18 +19,18 @@ class Command(models.Model):
     """
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
     command_type = fields.ForeignKeyField(
-        "database.CommandType",
+        "models.CommandType",
         related_name="commands",
         null=False
     )
     equipment_id = fields.ForeignKeyField(
-        "database.Equipment",
+        "models.Equipment",
         related_name="commands",
         null=False
     )
     payload = fields.CharField(max_length=200, null=True)
-    created_at = fields.DatetimeField(auto_now_add=True)
+    created_at = fields.DatetimeField(null=False, default=naive_utcnow)
 
     class Meta:
-        table = "commands"
+        table = "Commands"
         ordering = ["-created_at"]

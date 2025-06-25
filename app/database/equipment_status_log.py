@@ -1,5 +1,9 @@
+from datetime import datetime
+
 from tortoise import fields, models
 import uuid
+
+from tools.application import naive_utcnow
 
 
 class EquipmentStatusLog(models.Model):
@@ -16,19 +20,19 @@ class EquipmentStatusLog(models.Model):
     """
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
     status_id = fields.ForeignKeyField(
-        "database.EquipmentStatus",
+        "models.EquipmentStatus",
         related_name="status_logs",
         null=False
     )
     equipment_id = fields.ForeignKeyField(
-        "database.Equipment",
+        "models.Equipment",
         related_name="status_logs",
         null=False
     )
     details = fields.CharField(max_length=300, null=True)
     reported_at = fields.DatetimeField(auto_now_add=True)
-    created_at = fields.DatetimeField(auto_now_add=True)
+    created_at = fields.DatetimeField(null=False, default=naive_utcnow)
 
     class Meta:
-        table = "equipment_status_logs"
+        table = "EquipmentStatusLogs"
         ordering = ["-created_at"]

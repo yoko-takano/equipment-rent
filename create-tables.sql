@@ -68,7 +68,7 @@ CREATE TABLE "UserAuth" (
   "created_at" timestamp DEFAULT now()
 );
 
--- Definição de Chaves Estrangeiras
+-- Foreign Key Definitions
 ALTER TABLE "Equipments" ADD CONSTRAINT fk_equipments_status FOREIGN KEY ("current_status_id") REFERENCES "EquipmentStatuses" ("id");
 
 ALTER TABLE "EquipmentStatusLogs" ADD CONSTRAINT fk_status_logs_status FOREIGN KEY ("status_id") REFERENCES "EquipmentStatuses" ("id");

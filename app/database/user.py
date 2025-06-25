@@ -1,6 +1,10 @@
-from tortoise import fields
+from datetime import datetime
+
 from tortoise.models import Model
+from tortoise import fields
 import uuid
+
+from tools.application import naive_utcnow
 
 
 class User(Model):
@@ -18,10 +22,10 @@ class User(Model):
     name = fields.CharField(max_length=60, null=False)
     email = fields.CharField(max_length=60, unique=True, null=False)
     is_active = fields.BooleanField(default=True)
-    created_at = fields.DatetimeField(auto_now_add=True)
+    created_at = fields.DatetimeField(null=False, default=naive_utcnow)
 
     class Meta:
-        table = "users"
+        table = "Users"
         ordering = ["-created_at"]
 
     def __str__(self):

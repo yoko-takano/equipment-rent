@@ -1,5 +1,9 @@
+from datetime import datetime
+
 from tortoise import fields, models
 import uuid
+
+from tools.application import naive_utcnow
 
 
 class Reservation(models.Model):
@@ -17,24 +21,24 @@ class Reservation(models.Model):
     """
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
     user_id = fields.ForeignKeyField(
-        "database.User",
+        "models.User",
         related_name="reservations",
         null=False
     )
     equipment_id = fields.ForeignKeyField(
-        "database.Equipment",
+        "models.Equipment",
         related_name="reservations",
         null=False
     )
     start_time = fields.DatetimeField(null=False)
     end_time = fields.DatetimeField(null=False)
     status_id = fields.ForeignKeyField(
-        "database.ReservationStatus",
+        "models.ReservationStatus",
         related_name="reservations",
         null=False
     )
-    created_at = fields.DatetimeField(auto_now_add=True)
+    created_at = fields.DatetimeField(null=False, default=naive_utcnow)
 
     class Meta:
-        table = "reservations"
+        table = "Reservations"
         ordering = ["-created_at"]

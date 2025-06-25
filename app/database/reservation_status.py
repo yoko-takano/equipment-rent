@@ -1,5 +1,10 @@
+from datetime import datetime
+
 from tortoise import fields, models
 import uuid
+
+from tools.application import naive_utcnow
+
 
 class ReservationStatus(models.Model):
     """
@@ -12,10 +17,10 @@ class ReservationStatus(models.Model):
     """
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
     name = fields.CharField(max_length=60, unique=True, null=False)
-    created_at = fields.DatetimeField(auto_now_add=True)
+    created_at = fields.DatetimeField(null=False, default=naive_utcnow)
 
     class Meta:
-        table = "reservation_statuses"
+        table = "ReservationStatuses"
         ordering = ["-created_at"]
 
     def __str__(self):

@@ -1,6 +1,10 @@
+from datetime import datetime
+
 from tortoise import fields
 from tortoise.models import Model
 import uuid
+
+from tools.application import naive_utcnow
 
 
 class Equipment(Model):
@@ -18,16 +22,16 @@ class Equipment(Model):
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
     name = fields.CharField(max_length=60, unique=True, null=False)
     current_status_id = fields.ForeignKeyField(
-        "database.EquipmentStatus",
+        "models.EquipmentStatus",
         related_name="equipments",
         null=True
     )
     location = fields.UUIDField(null=True)
-    last_heartbeat = fields.DatetimeField(null=True)
-    created_at = fields.DatetimeField(auto_now_add=True)
+    last_heartbeat = fields.DatetimeField(null=False, default=naive_utcnow)
+    created_at = fields.DatetimeField(null=False, default=naive_utcnow)
 
     class Meta:
-        table = "equipments"
+        table = "Equipments"
         ordering = ["-created_at"]
 
     def __str__(self):

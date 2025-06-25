@@ -1,0 +1,60 @@
+from fastapi import APIRouter, Path, Body, Depends
+from fastapi.security import OAuth2PasswordRequestForm
+
+from app.schemas.user_auth_schemas import UserRequestSchema, UserResponseSchema, TokenSchema
+from app.services.auth_service import AuthService
+
+auth_router = APIRouter(
+    prefix="/auth",
+    tags=["Auth"]
+)
+
+
+@auth_router.post(
+    "/register",
+    response_model=UserResponseSchema,
+    summary="Register a new user",
+    description="Creates a new user account with login credentials."
+)
+async def register_user(user_info: UserRequestSchema) -> UserResponseSchema:
+    """
+    Handles user registration by creating a new user and associated login credentials.
+    \f
+    :param user_info: UserRequestSchema object containing user registration data.
+    :return: UserResponseSchema object representing the newly created user.
+    """
+    return await AuthService.post_user(user_info)
+
+
+@auth_router.post(
+    "/login",
+    response_model=TokenSchema,
+    summary="Login a user",
+    description="Logs a user in."
+)
+async def login_user(form_data: OAuth2PasswordRequestForm = Depends()):
+    """
+    Authenticates a user and returns a JWT token upon successful login.
+    \f
+    :param form_data: OAuth2PasswordRequestForm containing username and password.
+    :return: TokenSchema object with access token and token type.
+    """
+    return await AuthService.login_user(form_data)
+
+
+@auth_router.get(
+    "/me",
+    response_model=UserResponseSchema,
+    summary="Get current user info",
+    description="Returns the authenticated user's information."
+)
+async def get_specific_user(
+        current_user: UserResponseSchema = Depends(AuthService.get_current_active_user)
+) -> UserResponseSchema:
+    """
+    Retrieves the currently authenticated user's details.
+    \f
+    :param current_user: UserResponseSchema of the current authenticated user (injected by dependency).
+    :return: UserResponseSchema object with user information.
+    """
+    return current_user
