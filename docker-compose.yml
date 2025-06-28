@@ -14,7 +14,7 @@ services:
     networks:
       - rent-network
     environment:
-      - MQTT_BROKER_HOST=rent-mqtt5
+      - MQTT_BROKER_HOST=rent-mosquitto
       - MQTT_BROKER_PORT=1883
 
   rent-postgres:
@@ -40,8 +40,8 @@ services:
       - "9001:9001" #default mqtt port for websockets
     volumes:
       - ./config:/mosquitto/config:rw
-#      - ./data:/mosquitto/data:rw
-#      - ./log:/mosquitto/log:rw
+      - ./data:/mosquitto/data:rw
+      - ./log:/mosquitto/log:rw
     restart: unless-stopped
     networks:
       - rent-network

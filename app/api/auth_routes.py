@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Path, Body, Depends
+from fastapi import APIRouter, Body, Depends
 from fastapi.security import OAuth2PasswordRequestForm
+from starlette import status
 
-from app.schemas.user_auth_schemas import UserRequestSchema, UserResponseSchema, TokenSchema
+from app.schemas.user_auth_schemas import UserRequestSchema, UserResponseSchema, TokenSchema, LoginSchema
 from app.services.auth_service import AuthService
 
 auth_router = APIRouter(
@@ -13,10 +14,13 @@ auth_router = APIRouter(
 @auth_router.post(
     "/register",
     response_model=UserResponseSchema,
+    status_code=status.HTTP_201_CREATED,
     summary="Register a new user",
     description="Creates a new user account with login credentials."
 )
-async def register_user(user_info: UserRequestSchema) -> UserResponseSchema:
+async def register_user(
+        user_info: UserRequestSchema = Body(..., description="Data information of the user", alias="userInfo"),
+) -> UserResponseSchema:
     """
     Handles user registration by creating a new user and associated login credentials.
     \f
@@ -29,32 +33,37 @@ async def register_user(user_info: UserRequestSchema) -> UserResponseSchema:
 @auth_router.post(
     "/login",
     response_model=TokenSchema,
+    status_code=status.HTTP_200_OK,
     summary="Login a user",
     description="Logs a user in."
 )
-async def login_user(form_data: OAuth2PasswordRequestForm = Depends()):
+async def login_user(
+        credentials: OAuth2PasswordRequestForm = Depends()
+) -> TokenSchema:
     """
     Authenticates a user and returns a JWT token upon successful login.
     \f
-    :param form_data: OAuth2PasswordRequestForm containing username and password.
+    :param credentials: OAuth2PasswordRequestForm containing username and password.
     :return: TokenSchema object with access token and token type.
     """
-    return await AuthService.login_user(form_data)
+    credentials = LoginSchema(username=credentials.username, password=credentials.password)
+    return await AuthService.login_user(credentials)
 
 
 @auth_router.get(
     "/me",
     response_model=UserResponseSchema,
+    status_code=status.HTTP_200_OK,
     summary="Get current user info",
     description="Returns the authenticated user's information."
 )
 async def get_specific_user(
-        current_user: UserResponseSchema = Depends(AuthService.get_current_active_user)
+        current: UserResponseSchema = Depends(AuthService.get_current_active_user)
 ) -> UserResponseSchema:
     """
     Retrieves the currently authenticated user's details.
     \f
-    :param current_user: UserResponseSchema of the current authenticated user (injected by dependency).
+    :param current: UserResponseSchema of the current authenticated user (injected by dependency).
     :return: UserResponseSchema object with user information.
     """
-    return current_user
+    return current

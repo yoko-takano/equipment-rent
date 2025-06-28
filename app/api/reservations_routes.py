@@ -1,70 +1,112 @@
-from fastapi import APIRouter, status
+from typing import List
+from uuid import UUID
+
+from fastapi import APIRouter, status, Body, Path
+
+from app.schemas.reservation_schemas import ReservationStatusResponseSchema, ReservationRequestSchema, \
+    ReservationResponseSchema, ReservationUpdateSchema
+from app.services.reservation_service import ReservationService
 
 reservations_router = APIRouter(
     prefix="/reservations",
     tags=["Reservations"]
 )
 
+
+@reservations_router.get(
+    "/status-reservation",
+    response_model=List[ReservationStatusResponseSchema],
+    status_code=status.HTTP_200_OK,
+    summary="List reservation statuses",
+    description="Returns all reservation statuses."
+)
+async def get_reservation_statuses() -> List[ReservationStatusResponseSchema]:
+    """
+    Returns all possible reservation statuses.
+    """
+    return await ReservationService.get_reservation_statuses()
+
+
 @reservations_router.post(
     "",
+    response_model=ReservationResponseSchema,
     status_code=status.HTTP_201_CREATED,
     summary="Create a new reservation",
-    description="Creates a new equipment reservation. Requires user_id, equipment_id, start_time, end_time."
+    description="Creates a new equipment reservation."
 )
-async def create_reservation(reservation_data: dict):
+async def post_reservation(
+        reservation_data: ReservationRequestSchema = Body(..., description="Data information of the reservation."),
+) -> ReservationResponseSchema:
     """
     Creates a new reservation.
     """
-    return "create reservation"
+    return await ReservationService.post_reservation(reservation_data)
 
 
 @reservations_router.get(
     "",
+    response_model=List[ReservationResponseSchema],
     status_code=status.HTTP_200_OK,
     summary="List all reservations",
     description="Returns a list of all reservations."
 )
-async def list_reservations():
+async def get_reservations():
     """
     Lists all reservations.
     """
-    return "list reservations"
+    return await ReservationService.get_reservations()
 
 
 @reservations_router.get(
-    "/{reservation_id}",
+    "/{reservationId}",
+    response_model=ReservationResponseSchema,
     status_code=status.HTTP_200_OK,
     summary="Get reservation details",
     description="Returns details of a specific reservation by reservation_id."
 )
-async def get_reservation(reservation_id: str):
+async def get_specific_reservation(
+        reservation_id: UUID = Path(..., description="Unique identifier of the reservation.", alias="reservationId"),
+):
     """
     Retrieves details of the specified reservation.
     """
-    return f"get reservation {reservation_id}"
+    return await ReservationService.get_specific_reservation(reservation_id)
 
 
 @reservations_router.patch(
-    "/{reservation_id}",
+    "/{reservationId}",
+    response_model=ReservationResponseSchema,
     status_code=status.HTTP_200_OK,
     summary="Update reservation status",
     description="Updates the status of a reservation."
 )
-async def update_reservation(reservation_id: str, update_data: dict):
+async def patch_reservation(
+        reservation_id: UUID = Path(..., description="Unique identifier of the reservation.", alias="reservationId"),
+        reservation_data: ReservationUpdateSchema = Body(...,
+                                                         description="Data to update the status of a reservation."),
+) -> ReservationResponseSchema:
     """
     Updates the status of the specified reservation.
+    \f
+    :param reservation_id: Unique identifier of the reservation.
+    :param reservation_data: Data to update the status of a reservation.
     """
-    return f"update reservation {reservation_id}"
+    return await ReservationService.patch_reservation(reservation_id, reservation_data)
 
 
 @reservations_router.delete(
-    "/{reservation_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
+    "/{reservationId}",
+    response_model=None,
+    status_code=status.HTTP_200_OK,
     summary="Cancel reservation",
     description="Cancels a reservation."
 )
-async def cancel_reservation(reservation_id: str):
+async def delete_reservation(
+        reservation_id: UUID = Path(..., description="Unique identifier of the reservation.", alias="reservationId"),
+) -> None:
     """
     Cancels the specified reservation.
+    \f
+    :param reservation_id: Unique identifier of the reservation.
     """
-    return
+    return await ReservationService.delete_reservation(reservation_id)

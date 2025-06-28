@@ -1,11 +1,8 @@
 from typing import List, Type
 from uuid import UUID
 
-from fastapi import HTTPException
-from starlette import status
-
-from app.database import UserAuth
-from app.interface.user_interface import IUserService
+from app.core.exceptions import NotFoundException, ConflictException
+from app.interfaces.user_interface import IUserService
 from app.schemas.user_auth_schemas import UserResponseSchema, UserUpdateSchema
 from tools.application import Service
 
@@ -14,11 +11,14 @@ class UserService(Service):
     """
     Service class for user-related operations.
     """
+    user_repository: Type[IUserService]
+
     def __new__(
         cls,
-        user_service:Type[IUserService],
+        user_repository:Type[IUserService],
     ):
-        cls.user_service = user_service
+        # Assign the user repository implementation to the class.
+        cls.user_repository = user_repository
         return cls
 
     @classmethod
@@ -26,21 +26,9 @@ class UserService(Service):
         """
         Retrieves a list of all registered users along with their authentication details.
         """
-        auth_records = await UserAuth.all().prefetch_related("user")
-        user_list: List[UserResponseSchema] = []
 
-        for auth in auth_records:
-            user = auth.user
-            user_response = UserResponseSchema(
-                id=auth.id,
-                username=auth.username,
-                name=user.name,
-                email=user.email,
-                is_active=user.is_active
-            )
-
-            user_list.append(user_response)
-
+        # Retrieve the user from the repository
+        user_list = await cls.user_repository.get_users()
         return user_list
 
     @classmethod
@@ -48,67 +36,45 @@ class UserService(Service):
         """
         Retrieves a specific user by their ID, including authentication and profile details.
         """
-        user_auth = await UserAuth.get_or_none(id=user_id).prefetch_related("user")
 
-        if not user_auth:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
-            )
+        # Retrieve the user from the repository
+        user = await cls.user_repository.get_specific_user(user_id)
 
-        user_response = UserResponseSchema(
-            id=user_auth.id,
-            username=user_auth.username,
-            name=user_auth.user.name,
-            email=user_auth.user.email,
-            is_active=user_auth.user.is_active
-        )
+        # Validate user existence
+        if user is None:
+            raise NotFoundException(detail=f"User {user_id} not found in database")
 
-        return user_response
+        return user
 
     @classmethod
     async def patch_user(cls, user_id: UUID, user_data: UserUpdateSchema) -> UserResponseSchema:
         """
         Updates user information such as name, username and email.
         """
-        user_auth = await UserAuth.get_or_none(id=user_id).prefetch_related("user")
-        if not user_auth:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-        if user_data.name is not None:
-            user_auth.user.name = user_data.name
-        if user_data.email is not None:
-            user_auth.user.email = user_data.email
+        # Ensure the user exists before attempting to update
+        await cls.get_specific_user(user_id)
 
-        if user_data.username is not None:
-            existing = await UserAuth.get_or_none(username=user_data.username)
-            if existing and existing.id != user_id:
-                raise HTTPException(status_code=400, detail="Username already taken")
-            user_auth.username = user_data.username
+        # Perform the update in the repository
+        update_user = await cls.user_repository.patch_user(user_id, user_data)
 
-        await user_auth.user.save()
-        await user_auth.save()
+        # Handle case where username is already in use
+        if not update_user:
+            raise ConflictException(detail=f"The '{user_data.username} is already taken'")
 
-        return UserResponseSchema(
-            id=user_auth.id,
-            username=user_auth.username,
-            name=user_auth.user.name,
-            email=user_auth.user.email,
-            is_active=user_auth.user.is_active
-        )
+        return update_user
+
 
     @classmethod
-    async def delete_user(cls, user_id: UUID):
+    async def delete_user(cls, user_id: UUID) -> None:
         """
         Deactivates a user by setting is_active to False.
         """
-        user_auth = await UserAuth.get_or_none(id=user_id).prefetch_related("user")
 
-        if not user_auth:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
-            )
+        # Ensure the user exists
+        await cls.get_specific_user(user_id)
 
-        user_auth.user.is_active = False
-        await user_auth.user.save()
+        # Deactivate user
+        delete_user = await cls.user_repository.delete_user(user_id)
+
+        return delete_user

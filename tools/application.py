@@ -8,6 +8,10 @@ from pydantic.alias_generators import to_camel
 def naive_utcnow():
     return datetime.now(timezone.utc).replace(tzinfo=None)
 
+def to_naive_utc(dt: datetime) -> datetime:
+    if dt.tzinfo is not None:
+        return dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
 
 def to_camel_without_underscore(v: str):
     camel = to_camel(v)

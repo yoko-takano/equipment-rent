@@ -44,3 +44,11 @@ class TokenDataSchema(DTO):
     Schema representing the decoded information from the JWT token payload.
     """
     username: Optional[str] = Field(None, description="Username extracted from the token payload")
+
+class LoginSchema(DTO):
+    """
+    Schema for user login credentials.
+    Used to authenticate and obtain a JWT token.
+    """
+    username: str = Field(..., description="Username used for authentication")
+    password: str = Field(..., description="User's password")

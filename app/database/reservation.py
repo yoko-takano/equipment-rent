@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from tortoise import fields, models
 import uuid
@@ -12,32 +13,38 @@ class Reservation(models.Model):
 
     Attributes:
         id (UUID): Unique identifier of the reservation.
-        user_id (User): User who made the reservation.
-        equipment_id (Equipment): Reserved equipment.
+        user (User): User who made the reservation.
+        equipment (Equipment): Reserved equipment.
         start_time (datetime): Reservation start time.
         end_time (datetime): Reservation end time.
-        status_id (ReservationStatus): Reservation status.
+        status (ReservationStatus): Reservation status.
         created_at (datetime): Reserved equipment.
     """
     id = fields.UUIDField(pk=True, default=uuid.uuid4)
-    user_id = fields.ForeignKeyField(
+    user = fields.ForeignKeyField(
         "models.User",
         related_name="reservations",
         null=False
     )
-    equipment_id = fields.ForeignKeyField(
+    equipment = fields.ForeignKeyField(
         "models.Equipment",
         related_name="reservations",
         null=False
     )
-    start_time = fields.DatetimeField(null=False)
-    end_time = fields.DatetimeField(null=False)
-    status_id = fields.ForeignKeyField(
+    start_time = fields.DatetimeField(null=False, default=naive_utcnow)
+    end_time = fields.DatetimeField(null=False, default=naive_utcnow)
+    status = fields.ForeignKeyField(
         "models.ReservationStatus",
         related_name="reservations",
         null=False
     )
     created_at = fields.DatetimeField(null=False, default=naive_utcnow)
+
+    # This field is not part of the actual model definition.
+    # It's only added to help the IDE recognize the FK ID attribute.
+    user_id: Optional[uuid.UUID]
+    equipment_id: Optional[uuid.UUID]
+    status_id: Optional[uuid.UUID]
 
     class Meta:
         table = "Reservations"

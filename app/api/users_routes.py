@@ -28,14 +28,14 @@ async def get_users() -> List[UserResponseSchema]:
 
 
 @users_router.get(
-    "/{user_id}",
+    "/{userId}",
     status_code=status.HTTP_200_OK,
     response_model=UserResponseSchema,
     summary="Get user details",
-    description="Returns details of a specific user by user_id."
+    description="Returns details of a specific user by userId."
 )
 async def get_specific_user(
-        user_id: UUID = Path(..., description="Unique identifier of the user.")
+        user_id: UUID = Path(..., description="Unique identifier of the user.", alias="userId"),
 ) -> UserResponseSchema:
     """
     Retrieves details for a specific user.
@@ -46,15 +46,15 @@ async def get_specific_user(
 
 
 @users_router.patch(
-    "/{user_id}",
+    "/{userId}",
     status_code=status.HTTP_200_OK,
     response_model=UserResponseSchema,
     summary="Update user information",
     description="Updates user information such as name or email."
 )
 async def patch_user(
-        user_id: UUID = Path(..., description="Unique identifier of the user."),
-        user_data: UserUpdateSchema = Body(..., description="Data information of the user")
+        user_id: UUID = Path(..., description="Unique identifier of the user.", alias="userId"),
+        user_data: UserUpdateSchema = Body(..., description="Data information of the user", alias="userData"),
 ) -> UserResponseSchema:
     """
     Updates user information such as name or email.
@@ -66,14 +66,15 @@ async def patch_user(
 
 
 @users_router.delete(
-    "/{user_id}",
+    "/{userId}",
     status_code=status.HTTP_204_NO_CONTENT,
+    response_model=None,
     summary="Delete a user",
     description="Removes a user from the system."
 )
 async def delete_user(
-        user_id: UUID = Path(..., description="Unique identifier of the user.")
-):
+        user_id: UUID = Path(..., description="Unique identifier of the user.", alias="userId"),
+) -> None:
     """
     Removes a user from the system.
     \f

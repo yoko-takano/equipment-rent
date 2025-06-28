@@ -11,3 +11,7 @@ __pycache__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Runtime data and log directories
+data/
+log/

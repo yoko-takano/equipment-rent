@@ -6,21 +6,6 @@ from pydantic import Field
 
 from tools.application import DTO
 
-class CommandTypeRequestSchema(DTO):
-    """
-    Request schema for creating a new command type.
-    """
-    name: str = Field(..., max_length=60, description="Name of the command type")
-
-
-class CommandTypeResponseSchema(DTO):
-    """
-    Response schema for newly created command type.
-    """
-    id: UUID = Field(..., description="Unique identifier of the command type")
-    name: str = Field(..., description="Name of the command type")
-    created_at: datetime = Field(..., description="Timestamp when the command type was created")
-
 
 class EquipmentStatusEnum(str, Enum):
     """
@@ -53,7 +38,7 @@ class EquipmentRequestSchema(DTO):
     name: str = Field(..., description="Name of the equipment")
     current_status_id: UUID = Field(..., description="ID of the current equipment status")
     location: Optional[UUID] = Field(None, description="Location identifier of the equipment")
-
+    last_heartbeat: Optional[datetime] = Field(None, description="Timestamp of the last received heartbeat")
 
 class EquipmentResponseSchema(DTO):
     """
@@ -61,7 +46,17 @@ class EquipmentResponseSchema(DTO):
     """
     id: UUID = Field(..., description="Unique identifier for the equipment")
     name: str = Field(..., description="Name of the equipment")
-    current_status_id: Optional[EquipmentStatusEnum] = Field(None, description="Current status of the equipment")
+    current_status_name: EquipmentStatusEnum = Field(..., description="Name of the current equipment status")
     location: Optional[UUID] = Field(None, description="Location identifier of the equipment")
     last_heartbeat: Optional[datetime] = Field(None, description="Last known heartbeat from the equipment")
     created_at: datetime = Field(..., description="Timestamp of equipment creation")
+
+
+class EquipmentUpdateSchema(DTO):
+    """
+    Request schema for creating a new equipment.
+    """
+    name: Optional[str] = Field(..., description="Name of the equipment")
+    current_status_id: Optional[UUID] = Field(..., description="ID of the current equipment status")
+    location: Optional[UUID] = Field(None, description="Location identifier of the equipment")
+    last_heartbeat: Optional[datetime] = Field(None, description="Timestamp of the last received heartbeat")

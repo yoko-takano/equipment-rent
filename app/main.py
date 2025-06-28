@@ -1,20 +1,25 @@
 """Configures the api server."""
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 
 from app.api.auth_routes import auth_router
+from app.api.commands_routes import commands_router
 from app.api.equipment_status_routes import equipment_status_router
 from app.api.equipment_status_logs_routes import equipment_status_logs_router
 from app.api.equipments_routes import equipments_router
+from app.api.reservations_routes import reservations_router
 from app.api.users_routes import users_router
 from app.core.config import init_db, connect_mqtt
-from app.core.seeds import seed_equipment_statuses
+from app.core.dependencies import inject_dependencies
+from app.core.seeds import seed_equipment_statuses, seed_reservation_statuses, seed_command_types
+import app.mqqt_client.mqtt_service
 
 tags_metadata = [
     {
         "name": "Auth",
-        "description": "Handles user registration, login, and access to authenticated user information using JWT tokens."
+        "description": "Handles user registration, login, and access to authenticated user information using JWT "
+                       "tokens."
     },
     {
         "name": "Users",
@@ -22,11 +27,13 @@ tags_metadata = [
     },
     {
         "name": "Equipments",
-        "description": "Provides access to equipment data, including listing, creation, updates, deletion, and status retrieval."
+        "description": "Provides access to equipment data, including listing, creation, updates, deletion, and status "
+                       "retrieval."
     },
     {
         "name": "Reservations",
-        "description": "Manages equipment reservations, including creation, listing, updating reservation status, and cancellation."
+        "description": "Manages equipment reservations, including creation, listing, updating reservation status, and "
+                       "cancellation."
     },
     {
         "name": "Commands",
@@ -34,7 +41,8 @@ tags_metadata = [
     },
     {
         "name": "EquipmentStatus",
-        "description": "Provides all possible equipment statuses and logs of equipment status changes, including filtering by equipment."
+        "description": "Provides all possible equipment statuses and logs of equipment status changes, including "
+                       "filtering by equipment."
     }
 ]
 
@@ -44,6 +52,9 @@ async def lifespan(application: FastAPI):
     await init_db(application)
     await connect_mqtt()
     await seed_equipment_statuses()
+    await seed_reservation_statuses()
+    await seed_command_types()
+    inject_dependencies()
     yield
 
 app = FastAPI(
@@ -67,3 +78,5 @@ app.include_router(equipments_router)
 app.include_router(equipment_status_logs_router)
 app.include_router(equipment_status_router)
 app.include_router(auth_router)
+app.include_router(reservations_router)
+app.include_router(commands_router)

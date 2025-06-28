@@ -1,10 +1,8 @@
 from abc import ABC, abstractmethod
-
-from fastapi import Depends
-from fastapi.security import OAuth2PasswordRequestForm
+from typing import Optional
 
 from app.core.config import oauth2_scheme
-from app.schemas.user_auth_schemas import UserResponseSchema, UserRequestSchema, TokenSchema
+from app.schemas.user_auth_schemas import UserResponseSchema, UserRequestSchema, TokenSchema, LoginSchema
 
 
 class IAuthService(ABC):
@@ -13,7 +11,7 @@ class IAuthService(ABC):
     """
     @classmethod
     @abstractmethod
-    def get_password_hash(cls, password: str) -> str:
+    async def get_password_hash(cls, password: str) -> str:
         """
         Hashes a plaintext password.
         """
@@ -24,7 +22,7 @@ class IAuthService(ABC):
     async def post_user(
             cls,
             user_info: UserRequestSchema
-    ) -> UserResponseSchema:
+    ) -> Optional[UserResponseSchema]:
         """
         Registers a new user with the given credentials.
         """
@@ -34,8 +32,8 @@ class IAuthService(ABC):
     @abstractmethod
     async def login_user(
             cls,
-            form_data: OAuth2PasswordRequestForm
-    ) -> TokenSchema:
+            credentials: Optional[LoginSchema],
+    ) -> str:
         """
         Authenticates the user and returns a JWT access token.
         """
@@ -45,7 +43,7 @@ class IAuthService(ABC):
     @abstractmethod
     async def get_current_active_user(
             cls,
-            token: str = Depends(oauth2_scheme)
+            token: str
     ) -> UserResponseSchema:
         """
         Extracts the user from the JWT token and ensures they are active.
