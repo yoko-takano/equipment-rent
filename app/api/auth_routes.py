@@ -2,6 +2,7 @@ from fastapi import APIRouter, Body, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 from starlette import status
 
+from app.core.config import oauth2_scheme
 from app.schemas.user_auth_schemas import UserRequestSchema, UserResponseSchema, TokenSchema, LoginSchema
 from app.services.auth_service import AuthService
 
@@ -55,7 +56,8 @@ async def login_user(
     response_model=UserResponseSchema,
     status_code=status.HTTP_200_OK,
     summary="Get current user info",
-    description="Returns the authenticated user's information."
+    description="Returns the authenticated user's information.",
+    dependencies=[Depends(oauth2_scheme)],
 )
 async def get_specific_user(
         current: UserResponseSchema = Depends(AuthService.get_current_active_user)

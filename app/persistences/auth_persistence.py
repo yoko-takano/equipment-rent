@@ -19,7 +19,7 @@ class AuthPersistence(IAuthService):
         """
         Hashes a plaintext password.
         """
-        return await pwd_context.hash(password)
+        return pwd_context.hash(password)
 
     @classmethod
     async def post_user(
@@ -39,7 +39,7 @@ class AuthPersistence(IAuthService):
             email=user_info.email
         )
 
-        hashed_password = cls.get_password_hash(user_info.password)
+        hashed_password = await cls.get_password_hash(user_info.password)
 
         create_user_auth = await UserAuth.create(
             username=user_info.username,
