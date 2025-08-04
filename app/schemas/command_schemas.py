@@ -66,6 +66,8 @@ class CommandResponseSchema(DTO):
     """
     id: UUID = Field(..., description="Unique identifier for the command solicitation")
     equipment_id: UUID = Field(..., description="Unique identifier of the equipment that received the command")
+    equipment_name: str = Field(..., description="Name of the equipment that received the command")
     command_type_id: UUID = Field(..., description="Unique identifier of the command type")
+    command_name: str = Field(..., description="Name of the command solicitation")
     payload: Optional[str] = Field(None, description="Optional command payload sent to the equipment")
     created_at: datetime = Field(..., description="Timestamp of command solicitation creation")

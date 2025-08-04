@@ -1,7 +1,7 @@
 """Configures the api server."""
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 
 from app.api.auth_routes import auth_router
 from app.api.commands_routes import commands_router
@@ -10,10 +10,9 @@ from app.api.equipment_status_logs_routes import equipment_status_logs_router
 from app.api.equipments_routes import equipments_router
 from app.api.reservations_routes import reservations_router
 from app.api.users_routes import users_router
-from app.core.config import init_db, connect_mqtt
-from app.core.dependencies import inject_dependencies
+from app.core.config import init_db, connect_mqtt, oauth2_scheme
+from utils.dependencies import inject_dependencies
 from app.core.seeds import seed_equipment_statuses, seed_reservation_statuses, seed_command_types
-import app.mqqt_client.mqtt_service
 
 tags_metadata = [
     {
@@ -74,9 +73,9 @@ app = FastAPI(
 
 # Register the API routes to the FastAPI application
 app.include_router(users_router)
-app.include_router(equipments_router)
+app.include_router(equipments_router, dependencies=[Depends(oauth2_scheme)])
 app.include_router(equipment_status_logs_router)
 app.include_router(equipment_status_router)
 app.include_router(auth_router)
-app.include_router(reservations_router)
-app.include_router(commands_router)
+app.include_router(reservations_router, dependencies=[Depends(oauth2_scheme)])
+app.include_router(commands_router, dependencies=[Depends(oauth2_scheme)])

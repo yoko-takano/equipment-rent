@@ -1,4 +1,5 @@
 from typing import Type, List
+from uuid import UUID
 
 from app.core.exceptions import NotFoundException
 from app.interfaces.command_interface import ICommandService
@@ -43,3 +44,27 @@ class CommandService(Service):
             raise NotFoundException(detail=f"Equipment with id '{equipment_data.equipment_id}' not found")
 
         return await cls.command_repository.post_command(command_data)
+
+    @classmethod
+    async def get_commands(
+            cls
+    ) -> List[CommandResponseSchema]:
+        """
+        Retrieves the list of all commands that have been executed in the system.
+        """
+        return await cls.command_repository.get_commands()
+
+    @classmethod
+    async def get_specific_command(
+            cls,
+            command_id: UUID,
+    ) -> CommandResponseSchema:
+        """
+        Retrieves a specific command that have been executed in the system.
+        """
+        command_response = await cls.command_repository.get_specific_command(command_id)
+
+        if not command_response:
+            raise NotFoundException(detail=f"Command with ID '{command_id}' not found")
+
+        return command_response

@@ -4,10 +4,10 @@ from typing import Optional
 import jwt
 from jwt import ExpiredSignatureError, InvalidTokenError, decode
 
-from app.core.config import oauth2_scheme, pwd_context, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
+from app.core.config import pwd_context, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 from app.database import UserAuth, User
 from app.interfaces.auth_interface import IAuthService
-from app.schemas.user_auth_schemas import UserRequestSchema, UserResponseSchema, TokenSchema, LoginSchema
+from app.schemas.user_auth_schemas import UserRequestSchema, UserResponseSchema, LoginSchema
 
 
 class AuthPersistence(IAuthService):
@@ -19,7 +19,7 @@ class AuthPersistence(IAuthService):
         """
         Hashes a plaintext password.
         """
-        return await pwd_context.hash(password)
+        return pwd_context.hash(password)
 
     @classmethod
     async def post_user(
@@ -39,7 +39,7 @@ class AuthPersistence(IAuthService):
             email=user_info.email
         )
 
-        hashed_password = cls.get_password_hash(user_info.password)
+        hashed_password = await cls.get_password_hash(user_info.password)
 
         create_user_auth = await UserAuth.create(
             username=user_info.username,

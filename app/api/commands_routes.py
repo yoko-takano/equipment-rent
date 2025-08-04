@@ -1,6 +1,7 @@
 from typing import List
+from uuid import UUID
 
-from fastapi import APIRouter, status, Body
+from fastapi import APIRouter, status, Body, Path
 
 from app.schemas.command_schemas import CommandRequestSchema, CommandResponseSchema, CommandTypeResponseSchema
 from app.services.command_service import CommandService
@@ -32,7 +33,7 @@ async def get_command_types() -> List[CommandTypeResponseSchema]:
                 "Requires equipment_id, command_type_id, and optional payload."
 )
 async def post_command(
-        command_data: CommandRequestSchema = Body(..., description="Data information of the command solicitation"),
+        command_data: CommandRequestSchema = Body(..., description="Data information of the command solicitation."),
 ) -> CommandResponseSchema:
     """
     Post a command to equipment.
@@ -48,21 +49,25 @@ async def post_command(
     summary="List all commands",
     description="Returns all commands sent."
 )
-async def list_commands():
+async def get_commands():
     """
-    Lists all commands.
+    Retrieves the list of all commands that have been executed in the system.
     """
-    return "list commands"
+    return await CommandService.get_commands()
 
 
 @commands_router.get(
-    "/{command_id}",
+    "/{commandId}",
     status_code=status.HTTP_200_OK,
     summary="Get command details",
     description="Returns details of a specific command."
 )
-async def get_command(command_id: str):
+async def get_specific_command(
+        command_id: UUID = Path(..., description="Unique identifier of the command.", alias="commandId"),
+):
     """
-    Retrieves details of the specified command.
+    Retrieves a specific command that have been executed in the system.
+    \f
+    :param command_id: Unique identifier of the command.
     """
-    return f"get command {command_id}"
+    return await CommandService.get_specific_command(command_id)
