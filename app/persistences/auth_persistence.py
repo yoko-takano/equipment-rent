@@ -4,10 +4,10 @@ from typing import Optional
 import jwt
 from jwt import ExpiredSignatureError, InvalidTokenError, decode
 
-from app.core.config import oauth2_scheme, pwd_context, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
+from app.core.config import pwd_context, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY, ALGORITHM
 from app.database import UserAuth, User
 from app.interfaces.auth_interface import IAuthService
-from app.schemas.user_auth_schemas import UserRequestSchema, UserResponseSchema, TokenSchema, LoginSchema
+from app.schemas.user_auth_schemas import UserRequestSchema, UserResponseSchema, LoginSchema
 
 
 class AuthPersistence(IAuthService):

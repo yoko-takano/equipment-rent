@@ -1,6 +1,5 @@
 import asyncio
 import json
-from datetime import datetime, timezone
 from uuid import UUID
 
 from app.core.config import mqtt
