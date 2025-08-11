@@ -13,6 +13,7 @@ from app.api.users_routes import users_router
 from app.core.config import init_db, connect_mqtt, oauth2_scheme
 from utils.dependencies import inject_dependencies
 from app.core.seeds import seed_equipment_statuses, seed_reservation_statuses, seed_command_types
+from fastapi.middleware.cors import CORSMiddleware
 
 tags_metadata = [
     {
@@ -69,6 +70,15 @@ app = FastAPI(
     terms_of_service="/terms",
     docs_url="/docs",
     redoc_url="/redoc",
+)
+
+# Add CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Register the API routes to the FastAPI application
